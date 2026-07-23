@@ -4,6 +4,7 @@ import { PdfViewer } from './components/PdfViewer';
 
 const RECENT_FILES_KEY = 'pdf-viewer-recent-files';
 const TRACKED_SECTIONS = ['quick-open', 'what-we-are', 'services', 'features'];
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 function formatFileSize(size) {
   if (!size) {
@@ -37,6 +38,7 @@ export default function App() {
   const [isDragActive, setIsDragActive] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState(TRACKED_SECTIONS[0]);
   const [hiddenSections, setHiddenSections] = useState({});
+  const [serverStatus, setServerStatus] = useState('Checking server...');
   const fileInputRef = useRef(null);
   const sectionRefs = useRef({});
 
@@ -51,6 +53,22 @@ export default function App() {
     } catch {
       window.localStorage.removeItem(RECENT_FILES_KEY);
     }
+  }, []);
+
+  useEffect(() => {
+    if (!API_BASE_URL) {
+      setServerStatus('Server URL is missing.');
+      return;
+    }
+
+    fetch(`${API_BASE_URL}/api/health`)
+      .then((response) => response.json())
+      .then((data) => {
+        setServerStatus(data?.message || 'Server connected.');
+      })
+      .catch(() => {
+        setServerStatus('Server is offline. Local PDF viewing still works.');
+      });
   }, []);
 
   useEffect(() => {
@@ -309,6 +327,7 @@ export default function App() {
               </motion.button>
               <div className="rounded-2xl border border-dashed border-white/15 px-5 py-3 text-sm text-slate-400">
                 Drag and drop `.pdf` here
+                <div className="mt-1 text-xs text-slate-500">{serverStatus}</div>
               </div>
             </div>
           </div>
