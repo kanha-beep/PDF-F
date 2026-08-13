@@ -118,7 +118,7 @@ function PdfPageCanvas({
   );
 }
 
-export function PdfViewer({ file, onClose }) {
+export function PdfViewer({ file, onClose, isFullscreenActive, onEnterFullscreen }) {
   const viewerScrollRef = useRef(null);
   const pdfDocRef = useRef(null);
   const pageRefs = useRef({});
@@ -490,7 +490,6 @@ export function PdfViewer({ file, onClose }) {
               Prev
             </button>
             <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-100">
-              <span className="text-slate-400">Page</span>
               <input
                 type="number"
                 min="1"
@@ -511,7 +510,7 @@ export function PdfViewer({ file, onClose }) {
             </button>
           </div>
 
-          <div className="flex justify-center">
+          <div className="flex justify-center text-semibold">
             <button
               type="button"
               className={learnHidden ? activeButtonClass : buttonClass}
@@ -522,6 +521,11 @@ export function PdfViewer({ file, onClose }) {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+            {!isFullscreenActive ? (
+              <button type="button" className={buttonClass} onClick={onEnterFullscreen}>
+                Enter Full Screen
+              </button>
+            ) : null}
             <button type="button" className={buttonClass} onClick={() => adjustZoom('out')}>
               Zoom -
             </button>
@@ -545,13 +549,13 @@ export function PdfViewer({ file, onClose }) {
             >
               Free Zoom
             </button>
-            <button
+            {/* <button
               type="button"
               className={buttonClass}
               onClick={() => setRotation((value) => (value + 90) % 360)}
             >
               Rotate
-            </button>
+            </button> */}
             <button type="button" className={buttonClass} onClick={onClose}>
               Exit
             </button>

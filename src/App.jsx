@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { PdfViewer } from './components/PdfViewer';
-
+import { Analytics } from "@vercel/analytics/next"
 const RECENT_FILES_KEY = 'pdf-viewer-recent-files';
 const TRACKED_SECTIONS = ['quick-open', 'what-we-are', 'services', 'features'];
 const API_BASE_URL = import.meta.env.VITE_API_URL;
@@ -34,6 +34,9 @@ function formatOpenedAt(timestamp) {
 export default function App() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [viewerOpen, setViewerOpen] = useState(false);
+  const [isFullscreenActive, setIsFullscreenActive] = useState(() =>
+    typeof document !== 'undefined' ? Boolean(document.fullscreenElement) : false
+  );
   const [recentFiles, setRecentFiles] = useState([]);
   const [isDragActive, setIsDragActive] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState(TRACKED_SECTIONS[0]);
@@ -53,6 +56,19 @@ export default function App() {
     } catch {
       window.localStorage.removeItem(RECENT_FILES_KEY);
     }
+  }, []);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreenActive(Boolean(document.fullscreenElement));
+    };
+
+    handleFullscreenChange();
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
   }, []);
 
   useEffect(() => {
@@ -227,6 +243,15 @@ export default function App() {
       (candidate) => candidate.type === 'application/pdf' || candidate.name?.toLowerCase().endsWith('.pdf')
     );
     openFileInViewer(file);
+  };
+
+  const enterFullscreen = () => {
+    const rootElement = document.documentElement;
+    if (rootElement.requestFullscreen) {
+      rootElement.requestFullscreen().catch(() => {
+        // Browser may block the request. Viewer remains open in normal mode.
+      });
+    }
   };
 
   const closeViewer = () => {
@@ -478,9 +503,12 @@ export default function App() {
             key={`${selectedFile.name}-${selectedFile.size}-${selectedFile.lastModified}`}
             file={selectedFile}
             onClose={closeViewer}
+            isFullscreenActive={isFullscreenActive}
+            onEnterFullscreen={enterFullscreen}
           />
         ) : null}
       </AnimatePresence>
+      <Analytics />
     </main>
   );
 }
