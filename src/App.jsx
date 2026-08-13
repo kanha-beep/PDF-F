@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { PdfViewer } from './components/PdfViewer';
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/react"
 const RECENT_FILES_KEY = 'pdf-viewer-recent-files';
 const TRACKED_SECTIONS = ['quick-open', 'what-we-are', 'services', 'features'];
 const API_BASE_URL = import.meta.env.VITE_API_URL;
